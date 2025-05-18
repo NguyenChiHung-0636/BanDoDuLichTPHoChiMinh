@@ -1,0 +1,1852 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>BẢN ĐỒ CÁC ĐỊA ĐIỂM DU LỊCH THÀNH PHỐ HỒ CHÍ MINH</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/multi-style-layer.js"></script>
+        <script src="js/leaflet-svg-shape-markers.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/TPHCM_1.js"></script>
+        <script src="data/TPHCM_WaterAreas_2.js"></script>
+        <script src="data/HeThongCSDLCUOIKYHCM_3.js"></script>
+        <script src="data/TPHCM_ROADS_4.js"></script>
+        <script src="data/TPHCM_WaterLine_5.js"></script>
+        <script src="data/TPHCM_RAILS_6.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[10.234383937744639,105.94444846339321],[11.240693980789038,107.78485925658423]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+            this._div.innerHTML = '<h2>BẢN ĐỒ CÁC ĐỊA ĐIỂM DU LỊCH THÀNH PHỐ HỒ CHÍ MINH</h2>';
+        };
+        title.addTo(map);
+        var abstract = new L.Control({'position':'bottomright'});
+        abstract.onAdd = function (map) {
+            this._div = L.DomUtil.create('div',
+            'leaflet-control abstract');
+            this._div.id = 'abstract'
+
+                abstract.show();
+                return this._div;
+            };
+            abstract.show = function () {
+                this._div.classList.remove("abstract");
+                this._div.classList.add("abstractUncollapsed");
+                this._div.innerHTML = 'Bản đồ các địa điểm du lịch tại Thành phố Hồ Chí Minh do Sinh viên Nguyễn Chí Hùng_2228501030145 xây dựng cho Tiểu luận cuối kì môn học';
+        };
+        abstract.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_GoogleSatellite_0');
+        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
+        var layer_GoogleSatellite_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+        });
+        layer_GoogleSatellite_0;
+        map.addLayer(layer_GoogleSatellite_0);
+        function pop_TPHCM_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">GID_2</th>\
+                        <td>' + (feature.properties['GID_2'] !== null ? autolinker.link(String(feature.properties['GID_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">GID_0</th>\
+                        <td>' + (feature.properties['GID_0'] !== null ? autolinker.link(String(feature.properties['GID_0']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">COUNTRY</th>\
+                        <td>' + (feature.properties['COUNTRY'] !== null ? autolinker.link(String(feature.properties['COUNTRY']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">GID_1</th>\
+                        <td>' + (feature.properties['GID_1'] !== null ? autolinker.link(String(feature.properties['GID_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAME_1</th>\
+                        <td>' + (feature.properties['NAME_1'] !== null ? autolinker.link(String(feature.properties['NAME_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NL_NAME_1</th>\
+                        <td>' + (feature.properties['NL_NAME_1'] !== null ? autolinker.link(String(feature.properties['NL_NAME_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAME_2</th>\
+                        <td>' + (feature.properties['NAME_2'] !== null ? autolinker.link(String(feature.properties['NAME_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">VARNAME_2</th>\
+                        <td>' + (feature.properties['VARNAME_2'] !== null ? autolinker.link(String(feature.properties['VARNAME_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NL_NAME_2</th>\
+                        <td>' + (feature.properties['NL_NAME_2'] !== null ? autolinker.link(String(feature.properties['NL_NAME_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">TYPE_2</th>\
+                        <td>' + (feature.properties['TYPE_2'] !== null ? autolinker.link(String(feature.properties['TYPE_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ENGTYPE_2</th>\
+                        <td>' + (feature.properties['ENGTYPE_2'] !== null ? autolinker.link(String(feature.properties['ENGTYPE_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CC_2</th>\
+                        <td>' + (feature.properties['CC_2'] !== null ? autolinker.link(String(feature.properties['CC_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">HASC_2</th>\
+                        <td>' + (feature.properties['HASC_2'] !== null ? autolinker.link(String(feature.properties['HASC_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#79ace5',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#8a3bdf',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#7cc7e7',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#4adbc0',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#d983c6',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#cd3b1e',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#aee68c',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#18ced8',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#cc4a91',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#6d82c8',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#dcb366',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#35e91a',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#ed727a',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#bcd616',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#8872cb',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#41cf70',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#63d66f',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#e8da57',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#d0416e',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#10de88',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#d8691e',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#2825d4',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#96cc40',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#d662da',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#b959dc',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#79ace5',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#8a3bdf',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#7cc7e7',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#4adbc0',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#d983c6',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#cd3b1e',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#aee68c',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#18ced8',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#cc4a91',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#6d82c8',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#dcb366',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#35e91a',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#ed727a',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#bcd616',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#8872cb',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#41cf70',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#63d66f',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#e8da57',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#d0416e',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#10de88',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#d8691e',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#2825d4',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#96cc40',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#d662da',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        var pattern_TPHCM_1_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#b959dc',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 315
+        });
+        pattern_TPHCM_1_0.addTo(map);
+        function style_TPHCM_1_0(feature) {
+            switch(String(feature.properties['VARNAME_2'])) {
+                case 'Binh Chanh':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Binh Tan':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Binh Thanh':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Can Gio':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Cu Chi':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 1':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 10':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 11':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 12':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 2':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 3':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 4':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 5':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 6':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 7':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 8':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'District 9':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Go Vap':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Hoc Mon':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Nha Be':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Phu Nhuan':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Tan Binh':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Tan Phu':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                case 'Thu Duc':
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_TPHCM_1',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_TPHCM_1_0,
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        function style_TPHCM_1_1(feature) {
+            switch(String(feature.properties['VARNAME_2'])) {
+                case 'Binh Chanh':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(121,172,229,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Binh Tan':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(138,59,223,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Binh Thanh':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(124,199,231,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Can Gio':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(74,219,192,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Cu Chi':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(217,131,198,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 1':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(205,59,30,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 10':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(174,230,140,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 11':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(24,206,216,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 12':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(204,74,145,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 2':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(109,130,200,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 3':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(220,179,102,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 4':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(53,233,26,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 5':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(237,114,122,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 6':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(188,214,22,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 7':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(136,114,203,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 8':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(65,207,112,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'District 9':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(99,214,111,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Go Vap':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(232,218,87,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Hoc Mon':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(208,65,110,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Nha Be':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(16,222,136,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Phu Nhuan':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(216,105,30,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Tan Binh':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(40,37,212,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Tan Phu':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(150,204,64,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Thu Duc':
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(214,98,218,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_TPHCM_1',
+                opacity: 1,
+                color: 'rgba(185,89,220,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_TPHCM_1');
+        map.getPane('pane_TPHCM_1').style.zIndex = 401;
+        map.getPane('pane_TPHCM_1').style['mix-blend-mode'] = 'normal';
+        var layer_TPHCM_1 = new L.geoJson.multiStyle(json_TPHCM_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_TPHCM_1',
+            layerName: 'layer_TPHCM_1',
+            pane: 'pane_TPHCM_1',
+            onEachFeature: pop_TPHCM_1,
+            styles: [style_TPHCM_1_0,style_TPHCM_1_1,]
+        });
+        bounds_group.addLayer(layer_TPHCM_1);
+        map.addLayer(layer_TPHCM_1);
+        function pop_TPHCM_WaterAreas_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">fid</th>\
+                        <td>' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ISO</th>\
+                        <td>' + (feature.properties['ISO'] !== null ? autolinker.link(String(feature.properties['ISO']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">COUNTRY</th>\
+                        <td>' + (feature.properties['COUNTRY'] !== null ? autolinker.link(String(feature.properties['COUNTRY']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">F_CODE_DES</th>\
+                        <td>' + (feature.properties['F_CODE_DES'] !== null ? autolinker.link(String(feature.properties['F_CODE_DES']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">HYC_DESCRI</th>\
+                        <td>' + (feature.properties['HYC_DESCRI'] !== null ? autolinker.link(String(feature.properties['HYC_DESCRI']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAME</th>\
+                        <td>' + (feature.properties['NAME'] !== null ? autolinker.link(String(feature.properties['NAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_TPHCM_WaterAreas_2_0() {
+            return {
+                pane: 'pane_TPHCM_WaterAreas_2',
+                stroke: false, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(163,205,185,1.0)',
+                interactive: true,
+            }
+        }
+        function style_TPHCM_WaterAreas_2_1() {
+            return {
+                pane: 'pane_TPHCM_WaterAreas_2',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_TPHCM_WaterAreas_2');
+        map.getPane('pane_TPHCM_WaterAreas_2').style.zIndex = 402;
+        map.getPane('pane_TPHCM_WaterAreas_2').style['mix-blend-mode'] = 'normal';
+        var layer_TPHCM_WaterAreas_2 = new L.geoJson.multiStyle(json_TPHCM_WaterAreas_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_TPHCM_WaterAreas_2',
+            layerName: 'layer_TPHCM_WaterAreas_2',
+            pane: 'pane_TPHCM_WaterAreas_2',
+            onEachFeature: pop_TPHCM_WaterAreas_2,
+            styles: [style_TPHCM_WaterAreas_2_0,style_TPHCM_WaterAreas_2_1,]
+        });
+        bounds_group.addLayer(layer_TPHCM_WaterAreas_2);
+        map.addLayer(layer_TPHCM_WaterAreas_2);
+        function pop_HeThongCSDLCUOIKYHCM_3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">STT</th>\
+                        <td>' + (feature.properties['STT'] !== null ? autolinker.link(String(feature.properties['STT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Vietnamese Name</th>\
+                        <td>' + (feature.properties['Vietnamese Name'] !== null ? autolinker.link(String(feature.properties['Vietnamese Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Type</th>\
+                        <td>' + (feature.properties['Type'] !== null ? autolinker.link(String(feature.properties['Type']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Classification</th>\
+                        <td>' + (feature.properties['Classification'] !== null ? autolinker.link(String(feature.properties['Classification']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">District</th>\
+                        <td>' + (feature.properties['District'] !== null ? autolinker.link(String(feature.properties['District']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Year of Construction</th>\
+                        <td>' + (feature.properties['Year of Construction'] !== null ? autolinker.link(String(feature.properties['Year of Construction']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Area</th>\
+                        <td>' + (feature.properties['Area'] !== null ? autolinker.link(String(feature.properties['Area']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Age</th>\
+                        <td>' + (feature.properties['Age'] !== null ? autolinker.link(String(feature.properties['Age']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Range</th>\
+                        <td>' + (feature.properties['Range'] !== null ? autolinker.link(String(feature.properties['Range']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Address</th>\
+                        <td>' + (feature.properties['Address'] !== null ? autolinker.link(String(feature.properties['Address']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">X</th>\
+                        <td>' + (feature.properties['X'] !== null ? autolinker.link(String(feature.properties['X']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Y</th>\
+                        <td>' + (feature.properties['Y'] !== null ? autolinker.link(String(feature.properties['Y']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Time Open</th>\
+                        <td>' + (feature.properties['Time Open'] !== null ? autolinker.link(String(feature.properties['Time Open']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Description</th>\
+                        <td>' + (feature.properties['Description'] !== null ? autolinker.link(String(feature.properties['Description']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">LINK</th>\
+                        <td>' + (feature.properties['LINK'] !== null ? autolinker.link(String(feature.properties['LINK']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Evaluate</th>\
+                        <td>' + (feature.properties['Evaluate'] !== null ? autolinker.link(String(feature.properties['Evaluate']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_HeThongCSDLCUOIKYHCM_3_0() {
+            return {
+                pane: 'pane_HeThongCSDLCUOIKYHCM_3',
+                radius: 13.2,
+                opacity: 1,
+                color: 'rgba(184,8,8,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(184,8,8,1.0)',
+                interactive: true,
+            }
+        }
+        function style_HeThongCSDLCUOIKYHCM_3_1() {
+            return {
+                pane: 'pane_HeThongCSDLCUOIKYHCM_3',
+                radius: 14.4,
+                opacity: 1,
+                color: 'rgba(255,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_HeThongCSDLCUOIKYHCM_3');
+        map.getPane('pane_HeThongCSDLCUOIKYHCM_3').style.zIndex = 403;
+        map.getPane('pane_HeThongCSDLCUOIKYHCM_3').style['mix-blend-mode'] = 'normal';
+        var layer_HeThongCSDLCUOIKYHCM_3 = new L.geoJson.multiStyle(json_HeThongCSDLCUOIKYHCM_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_HeThongCSDLCUOIKYHCM_3',
+            layerName: 'layer_HeThongCSDLCUOIKYHCM_3',
+            pane: 'pane_HeThongCSDLCUOIKYHCM_3',
+            onEachFeature: pop_HeThongCSDLCUOIKYHCM_3,
+            pointToLayers: [function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_HeThongCSDLCUOIKYHCM_3_0(feature));
+            },function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_HeThongCSDLCUOIKYHCM_3_1(feature));
+            },
+        ]});
+        bounds_group.addLayer(layer_HeThongCSDLCUOIKYHCM_3);
+        map.addLayer(layer_HeThongCSDLCUOIKYHCM_3);
+        function pop_TPHCM_ROADS_4(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">fid</th>\
+                        <td>' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">MED_DESCRI</th>\
+                        <td>' + (feature.properties['MED_DESCRI'] !== null ? autolinker.link(String(feature.properties['MED_DESCRI']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">RTT_DESCRI</th>\
+                        <td>' + (feature.properties['RTT_DESCRI'] !== null ? autolinker.link(String(feature.properties['RTT_DESCRI']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">F_CODE_DES</th>\
+                        <td>' + (feature.properties['F_CODE_DES'] !== null ? autolinker.link(String(feature.properties['F_CODE_DES']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ISO</th>\
+                        <td>' + (feature.properties['ISO'] !== null ? autolinker.link(String(feature.properties['ISO']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ISOCOUNTRY</th>\
+                        <td>' + (feature.properties['ISOCOUNTRY'] !== null ? autolinker.link(String(feature.properties['ISOCOUNTRY']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_TPHCM_ROADS_4_0() {
+            return {
+                pane: 'pane_TPHCM_ROADS_4',
+                opacity: 1,
+                color: 'rgba(219,30,42,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 3.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_TPHCM_ROADS_4');
+        map.getPane('pane_TPHCM_ROADS_4').style.zIndex = 404;
+        map.getPane('pane_TPHCM_ROADS_4').style['mix-blend-mode'] = 'normal';
+        var layer_TPHCM_ROADS_4 = new L.geoJson(json_TPHCM_ROADS_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_TPHCM_ROADS_4',
+            layerName: 'layer_TPHCM_ROADS_4',
+            pane: 'pane_TPHCM_ROADS_4',
+            onEachFeature: pop_TPHCM_ROADS_4,
+            style: style_TPHCM_ROADS_4_0,
+        });
+        bounds_group.addLayer(layer_TPHCM_ROADS_4);
+        map.addLayer(layer_TPHCM_ROADS_4);
+        function pop_TPHCM_WaterLine_5(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">fid</th>\
+                        <td>' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">F_CODE_DES</th>\
+                        <td>' + (feature.properties['F_CODE_DES'] !== null ? autolinker.link(String(feature.properties['F_CODE_DES']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">HYC_DESCRI</th>\
+                        <td>' + (feature.properties['HYC_DESCRI'] !== null ? autolinker.link(String(feature.properties['HYC_DESCRI']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAM</th>\
+                        <td>' + (feature.properties['NAM'] !== null ? autolinker.link(String(feature.properties['NAM']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ISO</th>\
+                        <td>' + (feature.properties['ISO'] !== null ? autolinker.link(String(feature.properties['ISO']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAME_0</th>\
+                        <td>' + (feature.properties['NAME_0'] !== null ? autolinker.link(String(feature.properties['NAME_0']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_TPHCM_WaterLine_5_0() {
+            return {
+                pane: 'pane_TPHCM_WaterLine_5',
+                opacity: 1,
+                color: 'rgba(100,152,210,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 3.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_TPHCM_WaterLine_5');
+        map.getPane('pane_TPHCM_WaterLine_5').style.zIndex = 405;
+        map.getPane('pane_TPHCM_WaterLine_5').style['mix-blend-mode'] = 'normal';
+        var layer_TPHCM_WaterLine_5 = new L.geoJson(json_TPHCM_WaterLine_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_TPHCM_WaterLine_5',
+            layerName: 'layer_TPHCM_WaterLine_5',
+            pane: 'pane_TPHCM_WaterLine_5',
+            onEachFeature: pop_TPHCM_WaterLine_5,
+            style: style_TPHCM_WaterLine_5_0,
+        });
+        bounds_group.addLayer(layer_TPHCM_WaterLine_5);
+        map.addLayer(layer_TPHCM_WaterLine_5);
+        function pop_TPHCM_RAILS_6(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">fid</th>\
+                        <td>' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">FID_rail_d</th>\
+                        <td>' + (feature.properties['FID_rail_d'] !== null ? autolinker.link(String(feature.properties['FID_rail_d']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">F_CODE_DES</th>\
+                        <td>' + (feature.properties['F_CODE_DES'] !== null ? autolinker.link(String(feature.properties['F_CODE_DES']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">EXS_DESCRI</th>\
+                        <td>' + (feature.properties['EXS_DESCRI'] !== null ? autolinker.link(String(feature.properties['EXS_DESCRI']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">FCO_DESCRI</th>\
+                        <td>' + (feature.properties['FCO_DESCRI'] !== null ? autolinker.link(String(feature.properties['FCO_DESCRI']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">FID_countr</th>\
+                        <td>' + (feature.properties['FID_countr'] !== null ? autolinker.link(String(feature.properties['FID_countr']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ISO</th>\
+                        <td>' + (feature.properties['ISO'] !== null ? autolinker.link(String(feature.properties['ISO']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ISOCOUNTRY</th>\
+                        <td>' + (feature.properties['ISOCOUNTRY'] !== null ? autolinker.link(String(feature.properties['ISOCOUNTRY']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_TPHCM_RAILS_6_0() {
+            return {
+                pane: 'pane_TPHCM_RAILS_6',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        function style_TPHCM_RAILS_6_1() {
+            return {
+                pane: 'pane_TPHCM_RAILS_6',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_TPHCM_RAILS_6');
+        map.getPane('pane_TPHCM_RAILS_6').style.zIndex = 406;
+        map.getPane('pane_TPHCM_RAILS_6').style['mix-blend-mode'] = 'normal';
+        var layer_TPHCM_RAILS_6 = new L.geoJson.multiStyle(json_TPHCM_RAILS_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_TPHCM_RAILS_6',
+            layerName: 'layer_TPHCM_RAILS_6',
+            pane: 'pane_TPHCM_RAILS_6',
+            onEachFeature: pop_TPHCM_RAILS_6,
+            styles: [style_TPHCM_RAILS_6_0,style_TPHCM_RAILS_6_1,]
+        });
+        bounds_group.addLayer(layer_TPHCM_RAILS_6);
+        map.addLayer(layer_TPHCM_RAILS_6);
+        var overlaysTree = [
+            {label: '<img src="legend/TPHCM_RAILS_6.png" /> TPHCM_RAILS', layer: layer_TPHCM_RAILS_6},
+            {label: '<img src="legend/TPHCM_WaterLine_5.png" /> TPHCM_WaterLine', layer: layer_TPHCM_WaterLine_5},
+            {label: '<img src="legend/TPHCM_ROADS_4.png" /> TPHCM_ROADS', layer: layer_TPHCM_ROADS_4},
+            {label: '<img src="legend/HeThongCSDLCUOIKYHCM_3.png" /> HeThongCSDLCUOIKYHCM', layer: layer_HeThongCSDLCUOIKYHCM_3},
+            {label: '<img src="legend/TPHCM_WaterAreas_2.png" /> TPHCM_WaterAreas', layer: layer_TPHCM_WaterAreas_2},
+            {label: 'TPHCM<br /><table><tr><td style="text-align: center;"><img src="legend/TPHCM_1_BinhChanh0.png" /></td><td>Binh Chanh</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_BinhTan1.png" /></td><td>Binh Tan</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_BinhThanh2.png" /></td><td>Binh Thanh</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_CanGio3.png" /></td><td>Can Gio</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_CuChi4.png" /></td><td>Cu Chi</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District15.png" /></td><td>District 1</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District106.png" /></td><td>District 10</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District117.png" /></td><td>District 11</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District128.png" /></td><td>District 12</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District29.png" /></td><td>District 2</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District310.png" /></td><td>District 3</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District411.png" /></td><td>District 4</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District512.png" /></td><td>District 5</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District613.png" /></td><td>District 6</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District714.png" /></td><td>District 7</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District815.png" /></td><td>District 8</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_District916.png" /></td><td>District 9</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_GoVap17.png" /></td><td>Go Vap</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_HocMon18.png" /></td><td>Hoc Mon</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_NhaBe19.png" /></td><td>Nha Be</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_PhuNhuan20.png" /></td><td>Phu Nhuan</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_TanBinh21.png" /></td><td>Tan Binh</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_TanPhu22.png" /></td><td>Tan Phu</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_ThuDuc23.png" /></td><td>Thu Duc</td></tr><tr><td style="text-align: center;"><img src="legend/TPHCM_1_24.png" /></td><td></td></tr></table>', layer: layer_TPHCM_1},
+            {label: "Google Satellite", layer: layer_GoogleSatellite_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"Range": "str","District": "str","Classification": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Range = document.createElement('div');
+            div_Range.id = "div_Range";
+            div_Range.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Range);
+            sel_Range = document.createElement('select');
+            sel_Range.multiple = true;
+            sel_Range.size = 4;
+            sel_Range.id = "sel_Range";
+            var Range_options_str = "<option value='' unselected></option>";
+            sel_Range.onchange = function(){filterFunc()};
+            Range_options_str  += '<option value="100-200">100-200</option>';
+            Range_options_str  += '<option value="50-100">50-100</option>';
+            Range_options_str  += '<option value="<50"><50</option>';
+            Range_options_str  += '<option value=">200">>200</option>';
+            sel_Range.innerHTML = Range_options_str;
+            div_Range.appendChild(sel_Range);
+            var lab_Range = document.createElement('div');
+            lab_Range.innerHTML = 'Range';
+            lab_Range.className = 'filterlabel';
+            div_Range.appendChild(lab_Range);
+            var reset_Range = document.createElement('div');
+            reset_Range.innerHTML = 'clear filter';
+            reset_Range.className = 'filterlabel';
+            reset_Range.onclick = function() {
+                var options = document.getElementById("sel_Range").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Range.appendChild(reset_Range);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_District = document.createElement('div');
+            div_District.id = "div_District";
+            div_District.className= "filterselect";
+            document.getElementById("menu").appendChild(div_District);
+            sel_District = document.createElement('select');
+            sel_District.multiple = true;
+            sel_District.size = 10;
+            sel_District.id = "sel_District";
+            var District_options_str = "<option value='' unselected></option>";
+            sel_District.onchange = function(){filterFunc()};
+            District_options_str  += '<option value="Huyện Bình Chánh">Huyện Bình Chánh</option>';
+            District_options_str  += '<option value="Huyện Cần Giờ">Huyện Cần Giờ</option>';
+            District_options_str  += '<option value="Huyện Củ Chi">Huyện Củ Chi</option>';
+            District_options_str  += '<option value="Huyện Hóc Môn">Huyện Hóc Môn</option>';
+            District_options_str  += '<option value="Huyện Nhà Bè">Huyện Nhà Bè</option>';
+            District_options_str  += '<option value="Quận 1">Quận 1</option>';
+            District_options_str  += '<option value="Quận 10">Quận 10</option>';
+            District_options_str  += '<option value="Quận 11">Quận 11</option>';
+            District_options_str  += '<option value="Quận 12">Quận 12</option>';
+            District_options_str  += '<option value="Quận 3">Quận 3</option>';
+            District_options_str  += '<option value="Quận 4">Quận 4</option>';
+            District_options_str  += '<option value="Quận 5">Quận 5</option>';
+            District_options_str  += '<option value="Quận 6">Quận 6</option>';
+            District_options_str  += '<option value="Quận 7">Quận 7</option>';
+            District_options_str  += '<option value="Quận 8">Quận 8</option>';
+            District_options_str  += '<option value="Quận Bình Thạnh">Quận Bình Thạnh</option>';
+            District_options_str  += '<option value="Quận Bình Tân">Quận Bình Tân</option>';
+            District_options_str  += '<option value="Quận Gò Vấp">Quận Gò Vấp</option>';
+            District_options_str  += '<option value="Quận Phú Nhuận">Quận Phú Nhuận</option>';
+            District_options_str  += '<option value="Quận Tân Bình">Quận Tân Bình</option>';
+            District_options_str  += '<option value="Quận Tân Phú">Quận Tân Phú</option>';
+            District_options_str  += '<option value="Thành phố Thủ Đức">Thành phố Thủ Đức</option>';
+            sel_District.innerHTML = District_options_str;
+            div_District.appendChild(sel_District);
+            var lab_District = document.createElement('div');
+            lab_District.innerHTML = 'District';
+            lab_District.className = 'filterlabel';
+            div_District.appendChild(lab_District);
+            var reset_District = document.createElement('div');
+            reset_District.innerHTML = 'clear filter';
+            reset_District.className = 'filterlabel';
+            reset_District.onclick = function() {
+                var options = document.getElementById("sel_District").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_District.appendChild(reset_District);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Classification = document.createElement('div');
+            div_Classification.id = "div_Classification";
+            div_Classification.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Classification);
+            sel_Classification = document.createElement('select');
+            sel_Classification.multiple = true;
+            sel_Classification.size = 6;
+            sel_Classification.id = "sel_Classification";
+            var Classification_options_str = "<option value='' unselected></option>";
+            sel_Classification.onchange = function(){filterFunc()};
+            Classification_options_str  += '<option value="Khu dự trữ sinh quyển thế giới (UNESCO)">Khu dự trữ sinh quyển thế giới (UNESCO)</option>';
+            Classification_options_str  += '<option value="Không phân cấp">Không phân cấp</option>';
+            Classification_options_str  += '<option value="Tổ hợp giải trí cấp quốc gia">Tổ hợp giải trí cấp quốc gia</option>';
+            Classification_options_str  += '<option value="Điểm du lịch cấp Quốc Ga đặc biệt">Điểm du lịch cấp Quốc Ga đặc biệt</option>';
+            Classification_options_str  += '<option value="Điểm du lịch cấp Quốc Gia">Điểm du lịch cấp Quốc Gia</option>';
+            Classification_options_str  += '<option value="Điểm du lịch cấp Thành Phố">Điểm du lịch cấp Thành Phố</option>';
+            sel_Classification.innerHTML = Classification_options_str;
+            div_Classification.appendChild(sel_Classification);
+            var lab_Classification = document.createElement('div');
+            lab_Classification.innerHTML = 'Classification';
+            lab_Classification.className = 'filterlabel';
+            div_Classification.appendChild(lab_Classification);
+            var reset_Classification = document.createElement('div');
+            reset_Classification.innerHTML = 'clear filter';
+            reset_Classification.className = 'filterlabel';
+            reset_Classification.onclick = function() {
+                var options = document.getElementById("sel_Classification").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Classification.appendChild(reset_Classification);
+        </script>
+    </body>
+</html>
